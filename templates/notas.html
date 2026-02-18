@@ -1,0 +1,18 @@
+{% extends "base.html" %}
+
+{% block title %}Mis Notas - PyObsidian{% endblock %}
+
+{% block content %}
+    <h2>Archivos Recientes</h2>
+    <div class="notes-grid">
+        {% for nota in lista_notas %}
+            <div class="note-card">
+                <h3>📄 {{ nota.titulo }}</h3>
+                <p>Etiqueta: <span class="tag">{{ nota.tag }}</span></p>
+                <button>Leer Nota</button>
+            </div>
+        {% else %}
+            <p>No se encontraron notas en la bóveda.</p>
+        {% endfor %}
+    </div>
+{% endblock %}

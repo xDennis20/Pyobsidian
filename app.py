@@ -1,19 +1,24 @@
-from flask import Flask
+from flask import Flask,render_template
 
 app = Flask(__name__)
 
 
 @app.route('/')
-def home():  # put application's code here
-    return "<h1> Bienvenidos a Pyobsidian <h1><p>Tu sistema de notas en Markdown.</p>"
+def home():
+    return render_template('index.html')
 
-@app.route("/nota/<titulo>")
-def ver_nota(titulo: str):
-    return f"""
-    <h2>Viendo la nota: {titulo} <h2>
-    <p>Aquí se mostraría el contenido procesado de Markdown a HTML para la nota "{titulo}".</p>
-    <br>
-    <a href="/">Volver al inicio</a>
-    """
+@app.route('/about')
+def about():
+    return render_template('about.html')
+
+@app.route('/notas')
+def ver_notas():
+    mis_notas = [
+        {"titulo": "Aprendiendo Flask", "tag": "#dev"},
+        {"titulo": "Rutina de Calistenia", "tag": "#salud"},
+        {"titulo": "Configuración de Fedora", "tag": "#linux"}
+    ]
+    return render_template('notas.html', lista_notas=mis_notas)
+
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(debug=True, port=5000)
