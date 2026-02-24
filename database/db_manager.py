@@ -4,12 +4,11 @@ from models.documento import Documento
 
 class DatabaseManager:
     def __init__(self):
-        # Configura tus credenciales reales aquí
         self.conexion_params = {
             "host": "localhost",
             "database": "pyobsidian_db",
             "user": "postgres",
-            "password": "1234", # Reemplaza con tu clave
+            "password": "1234",
             "port": "5432"
         }
 
