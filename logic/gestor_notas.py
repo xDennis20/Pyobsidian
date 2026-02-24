@@ -1,4 +1,4 @@
-
+from database.db_manager import DatabaseManager
 from models.documento import Documento
 
 class GestorNotas:
@@ -8,8 +8,10 @@ class GestorNotas:
     def agregar_documento(self,documento: Documento) -> None:
         if not isinstance(documento,Documento):
             raise ValueError("Error: El valor no es tipo objeto Documento")
-        if not isinstance(documento.id_documento, int):
-            raise ValueError("Error: ID del documento tiene que ser int")
+        id_generado = DatabaseManager().insertar_documento(documento)
+        if not id_generado:
+            raise Exception("Error interno: No se pudo guardar el documento en la base de datos.")
+        documento.id_documento = id_generado
         self.documentos[documento.id_documento] = documento
         print("Documento agregado correctamente")
 
@@ -29,3 +31,8 @@ class GestorNotas:
             raise ValueError("Error: Texto vacio")
         documento = self.documentos.get(id_documento)
         documento.contenido_raw = texto_raw
+
+    def eliminar_documento(self,id_documento: int) -> None:
+        if id_documento not in self.documentos:
+            raise KeyError("Error: No existe el documento")
+        self.documentos.pop(id_documento)
