@@ -21,3 +21,11 @@ class GestorNotas:
             if documento.titulo.lower() == titulo.lower():
                 documentos_coincidencias.append(documento)
         return documentos_coincidencias
+
+    def actualizar_contenido(self,id_documento: int,texto_raw: str) -> None:
+        if id_documento not in self.documentos:
+            raise KeyError("Error: No existe el documento")
+        if not texto_raw or (len(texto_raw.strip()) == 0):
+            raise ValueError("Error: Texto vacio")
+        documento = self.documentos.get(id_documento)
+        documento.contenido_raw = texto_raw
