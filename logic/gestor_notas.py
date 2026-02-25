@@ -5,6 +5,11 @@ class GestorNotas:
     def __init__(self):
         self.documentos: dict[int,Documento] = {}
 
+    def obtener_datos_db(self):
+        documentos = DatabaseManager().obtener_todos()
+        for documento in documentos:
+            self.documentos[documento.id_documento] = documento
+
     def agregar_documento(self,documento: Documento) -> None:
         if not isinstance(documento,Documento):
             raise ValueError("Error: El valor no es tipo objeto Documento")
