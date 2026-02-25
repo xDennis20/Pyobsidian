@@ -8,8 +8,12 @@
         {% for nota in lista_notas %}
             <div class="note-card">
                 <h3>📄 {{ nota.titulo }}</h3>
-                <p>Etiqueta: <span class="tag">{{ nota.tag }}</span></p>
-                <button>Leer Nota</button>
+
+                <div class="note-content">
+                    {{ nota.contenido_procesado | safe }}
+                </div>
+
+                <a href="{{ url_for('ver_nota_individual', id_nota=nota.id_documento) }}" class="button">Leer Nota</a>
             </div>
         {% else %}
             <p>No se encontraron notas en la bóveda.</p>
