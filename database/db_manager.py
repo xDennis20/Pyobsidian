@@ -56,3 +56,41 @@ class DatabaseManager:
                 conexion.close()
 
         return id_generado
+
+    def obtener_todos(self) -> list[Documento]:
+        conexion = self.obtener_conexion()
+        if not conexion:
+            print("No se pudo conectar a la base de datos para cargar las notas.")
+            return []
+
+        documentos_cargados = []
+
+        query = "SELECT id, titulo, contenido_raw, fecha_creacion FROM documentos ORDER BY id ASC;"
+
+        try:
+            cursor = conexion.cursor()
+            cursor.execute(query)
+
+            filas = cursor.fetchall()
+
+            for fila in filas:
+                nota_recuperada = Documento(
+                    id_documento=fila[0],
+                    titulo=fila[1],
+                    contenido_raw=fila[2],
+                    fecha_creacion=fila[3]
+                )
+                documentos_cargados.append(nota_recuperada)
+
+            print(f"Se cargaron {len(documentos_cargados)} documentos desde la base de datos.")
+
+        except Error as e:
+            print(f"Error al obtener los documentos de Postgres: {e}")
+
+        finally:
+            if 'cursor' in locals() and cursor:
+                cursor.close()
+            if conexion:
+                conexion.close()
+
+        return documentos_cargados
