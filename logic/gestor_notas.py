@@ -34,10 +34,12 @@ class GestorNotas:
             raise KeyError("Error: No existe el documento")
         if not texto_raw or (len(texto_raw.strip()) == 0):
             raise ValueError("Error: Texto vacio")
+        DatabaseManager().actualizar_datos(id_documento,texto_raw)
         documento = self.documentos.get(id_documento)
         documento.contenido_raw = texto_raw
 
     def eliminar_documento(self,id_documento: int) -> None:
         if id_documento not in self.documentos:
             raise KeyError("Error: No existe el documento")
+        DatabaseManager().eliminar_documento(id_documento)
         self.documentos.pop(id_documento)
