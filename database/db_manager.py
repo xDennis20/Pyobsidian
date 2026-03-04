@@ -96,6 +96,43 @@ class DatabaseManager:
 
         return exito
 
+    def eliminar_documento(self, id_documento: int) -> bool:
+        conexion = self.obtener_conexion()
+        if not conexion:
+            print("No se pudo establecer la conexión para eliminar.")
+            return False
+
+        # Query de borrado filtrando estrictamente por el ID
+        query = "DELETE FROM documentos WHERE id = %s;"
+        valores = (id_documento,)
+        exito = False
+
+        try:
+            cursor = conexion.cursor()
+            cursor.execute(query, valores)
+
+            # Verificamos si Postgres eliminó alguna fila
+            if cursor.rowcount > 0:
+                conexion.commit()  # Confirmamos la destrucción del dato
+                print(f"Documento (ID: {id_documento}) eliminado físicamente de PostgreSQL.")
+                exito = True
+            else:
+                print(f"Advertencia: No se encontró el documento con ID {id_documento} para eliminar.")
+                conexion.rollback()  # Cancelamos por precaución
+
+        except Error as e:
+            conexion.rollback()
+            print(f"Error crítico en PostgreSQL al intentar eliminar: {e}")
+            raise
+
+        finally:
+            if 'cursor' in locals() and cursor:
+                cursor.close()
+            if conexion:
+                conexion.close()
+
+        return exito
+
     def obtener_todos(self) -> list[Documento]:
         conexion = self.obtener_conexion()
         if not conexion:
