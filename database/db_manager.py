@@ -57,6 +57,45 @@ class DatabaseManager:
 
         return id_generado
 
+    def actualizar_datos(self, id_documento: int, texto_raw: str) -> bool:
+        conexion = self.obtener_conexion()
+        if not conexion:
+            print("No se pudo establecer la conexión para actualizar.")
+            return False
+
+        query = """
+                UPDATE documentos
+                SET contenido_raw = %s
+                WHERE id = %s; \
+                """
+        valores = (texto_raw, id_documento)
+        exito = False
+
+        try:
+            cursor = conexion.cursor()
+            cursor.execute(query, valores)
+
+            if cursor.rowcount > 0:
+                conexion.commit()
+                print(f"Documento (ID: {id_documento}) actualizado con éxito en PostgreSQL.")
+                exito = True
+            else:
+                print(f"Advertencia: No se encontró el documento con ID {id_documento}.")
+                conexion.rollback()
+
+        except Error as e:
+            conexion.rollback()
+            print(f"Error crítico en PostgreSQL al actualizar: {e}")
+            raise
+
+        finally:
+            if 'cursor' in locals() and cursor:
+                cursor.close()
+            if conexion:
+                conexion.close()
+
+        return exito
+
     def obtener_todos(self) -> list[Documento]:
         conexion = self.obtener_conexion()
         if not conexion:
