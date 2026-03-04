@@ -14,5 +14,10 @@
         <div class="note-content full-page">
             {{ nota.contenido_procesado | safe }}
         </div>
+        <a href="{{ url_for('editar_nota', id_nota=nota.id_documento) }}" style="padding: 0.5rem; background-color: #ffc107; color: black; text-decoration: none;">✏️ Editar</a>
+
+        <form action="{{ url_for('eliminar_nota', id_nota=nota.id_documento) }}" method="POST" style="display: inline;" onsubmit="return confirm('🚨 ¿Estás seguro de que quieres eliminar esta nota para siempre?');">
+            <button type="submit" style="padding: 0.5rem; background-color: #dc3545; color: white; border: none; cursor: pointer;">🗑️ Eliminar</button>
+        </form>
     </article>
 {% endblock %}
