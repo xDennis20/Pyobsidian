@@ -1,33 +1,179 @@
 {% extends "base.html" %}
 
 {% block content %}
-<div class="auth-container">
-    <h2>Registrar Nuevo Usuario</h2>
+<style>
+    /* Centrado perfecto de la tarjeta en la pantalla */
+    .auth-wrapper {
+        display: flex;
+        justify-content: center;
+        align-items: center;
+        min-height: 80vh;
+        font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
 
-    {% with messages = get_flashed_messages() %}
-        {% if messages %}
-            <ul class="alertas-flask">
-            {% for message in messages %}
-                <li style="color: red; font-weight: bold;">{{ message }}</li>
-            {% endfor %}
-            </ul>
-        {% endif %}
-    {% endwith %}
+    /* La tarjeta flotante minimalista */
+    .auth-container {
+        background-color: #252525; /* Gris muy oscuro */
+        padding: 40px;
+        border-radius: 12px;
+        box-shadow: 0 8px 20px rgba(0, 0, 0, 0.4);
+        width: 100%;
+        max-width: 400px;
+        border: 1px solid #3a3a3a;
+        color: #e0e0e0;
+    }
 
-    <form method="POST" action="{{ url_for('register') }}">
-        <div style="margin-bottom: 10px;">
-            <label for="username">Nombre de Usuario:</label><br>
-            <input type="text" id="username" name="username" required>
+    /* Textos de la cabecera */
+    .auth-header {
+        text-align: center;
+        margin-bottom: 25px;
+    }
+
+    .auth-header h2 {
+        margin: 0;
+        color: #9b59b6; /* Morado hacker/Obsidian */
+        font-size: 1.8rem;
+    }
+
+    .auth-subtitle {
+        color: #a0a0a0;
+        font-size: 0.9rem;
+        margin-top: 5px;
+    }
+
+    /* Estructura de los inputs */
+    .form-group {
+        margin-bottom: 20px;
+        text-align: left;
+    }
+
+    .form-group label {
+        display: block;
+        margin-bottom: 8px;
+        font-weight: 600;
+        font-size: 0.95rem;
+        color: #cfcfcf;
+    }
+
+    /* Cajas de texto limpias */
+    .form-group input {
+        width: 100%;
+        padding: 12px;
+        border-radius: 6px;
+        border: 1px solid #444;
+        background-color: #1a1a1a;
+        color: #ffffff;
+        box-sizing: border-box;
+        transition: all 0.3s ease;
+    }
+
+    .form-group input:focus {
+        outline: none;
+        border-color: #9b59b6;
+        box-shadow: 0 0 8px rgba(155, 89, 182, 0.4);
+    }
+
+    /* Botón principal */
+    .btn-submit {
+        width: 100%;
+        padding: 12px;
+        background-color: #9b59b6;
+        color: white;
+        border: none;
+        border-radius: 6px;
+        font-size: 1.05rem;
+        font-weight: bold;
+        cursor: pointer;
+        transition: background-color 0.3s ease, transform 0.1s ease;
+        margin-top: 10px;
+    }
+
+    .btn-submit:hover {
+        background-color: #8e44ad;
+    }
+
+    .btn-submit:active {
+        transform: scale(0.98);
+    }
+
+    /* Alertas de error de Flask */
+    .alertas-flask {
+        background-color: #e74c3c;
+        color: white;
+        padding: 12px;
+        border-radius: 6px;
+        margin-bottom: 20px;
+        text-align: center;
+        font-weight: bold;
+        font-size: 0.9rem;
+    }
+
+    .alert-item {
+        margin: 0;
+    }
+
+    /* Enlaces de navegación inferior */
+    .auth-links {
+        margin-top: 25px;
+        text-align: center;
+        font-size: 0.9rem;
+        border-top: 1px solid #3a3a3a;
+        padding-top: 15px;
+    }
+
+    .link-highlight {
+        color: #3498db;
+        text-decoration: none;
+        font-weight: bold;
+        transition: color 0.3s ease;
+    }
+
+    .link-highlight:hover {
+        color: #2980b9;
+        text-decoration: underline;
+    }
+</style>
+
+<div class="auth-wrapper">
+    <div class="auth-container auth-card">
+
+        <div class="auth-header">
+            <h2>🛡️ Registrar Nuevo Usuario</h2>
+            <p class="auth-subtitle">Asegura tu lugar en la bóveda de conocimiento.</p>
         </div>
-        
-        <div style="margin-bottom: 10px;">
-            <label for="password">Contraseña secreta:</label><br>
-            <input type="password" id="password" name="password" required>
+
+        {% with messages = get_flashed_messages() %}
+            {% if messages %}
+                <div class="alertas-flask" role="alert">
+                {% for message in messages %}
+                    <p class="alert-item error-message">⚠️ {{ message }}</p>
+                {% endfor %}
+                </div>
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('register') }}" class="auth-form">
+            <div class="form-group">
+                <label for="username">👤 Nombre de Usuario:</label>
+                <input type="text" id="username" name="username"
+                       placeholder="Elige un alias..."
+                       autocomplete="username" minlength="3" required>
+            </div>
+
+            <div class="form-group">
+                <label for="password">🔑 Contraseña secreta:</label>
+                <input type="password" id="password" name="password"
+                       placeholder="Crea una contraseña fuerte..."
+                       autocomplete="new-password" minlength="5" required>
+            </div>
+
+            <button type="submit" class="btn-submit btn-glow">Crear Cuenta</button>
+        </form>
+
+        <div class="auth-links divider-top">
+            <p>¿Ya tienes acceso a la bóveda?</p>
+            <a href="{{ url_for('login') }}" class="link-highlight">Inicia sesión aquí ➔</a>
         </div>
-        
-        <button type="submit">Crear Cuenta</button>
-    </form>
-    
-    <p style="margin-top: 15px;">¿Ya tienes acceso a la bóveda? <a href="{{ url_for('login') }}">Inicia sesión aquí</a></p>
+    </div>
 </div>
 {% endblock %}

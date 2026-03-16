@@ -29,13 +29,14 @@ class DatabaseManager:
 
         # query de psycopg2
         query = """
-            INSERT INTO documentos (titulo, contenido_raw, contenido_procesado)
-            VALUES (%s, %s, %s)
+            INSERT INTO documentos (titulo, contenido_raw, contenido_procesado, usuario_id)
+            VALUES (%s, %s, %s, %s)
             RETURNING id;
         """
-        valores = (documento.titulo, documento.contenido_raw, documento.contenido_procesado)
+        valores = (documento.titulo, documento.contenido_raw, documento.contenido_procesado, documento.usuario_id)
         id_generado = None
 
+        cursor = None
         try:
             cursor = conexion.cursor()
             cursor.execute(query, valores)
@@ -57,7 +58,7 @@ class DatabaseManager:
 
         return id_generado
 
-    def actualizar_datos(self, id_documento: int, texto_raw: str) -> bool:
+    def actualizar_datos(self, id_documento: int, texto_raw: str, usuario_id: int) -> bool:
         conexion = self.obtener_conexion()
         if not conexion:
             print("No se pudo establecer la conexión para actualizar.")
@@ -66,11 +67,11 @@ class DatabaseManager:
         query = """
                 UPDATE documentos
                 SET contenido_raw = %s
-                WHERE id = %s; \
+                WHERE id = %s AND usuario_id = %s;
                 """
-        valores = (texto_raw, id_documento)
+        valores = (texto_raw, id_documento, usuario_id)
         exito = False
-
+        cursor = None
         try:
             cursor = conexion.cursor()
             cursor.execute(query, valores)
@@ -80,7 +81,7 @@ class DatabaseManager:
                 print(f"Documento (ID: {id_documento}) actualizado con éxito en PostgreSQL.")
                 exito = True
             else:
-                print(f"Advertencia: No se encontró el documento con ID {id_documento}.")
+                print(f"Advertencia: No se encontró el documento con ID {id_documento} o no te pertenece.")
                 conexion.rollback()
 
         except Error as e:
@@ -89,24 +90,23 @@ class DatabaseManager:
             raise
 
         finally:
-            if 'cursor' in locals() and cursor:
+            if cursor:
                 cursor.close()
             if conexion:
                 conexion.close()
 
         return exito
 
-    def eliminar_documento(self, id_documento: int) -> bool:
+    def eliminar_documento(self, id_documento: int, usuario_id: int) -> bool:
         conexion = self.obtener_conexion()
         if not conexion:
             print("No se pudo establecer la conexión para eliminar.")
             return False
 
-        # Query de borrado filtrando estrictamente por el ID
-        query = "DELETE FROM documentos WHERE id = %s;"
-        valores = (id_documento,)
+        query = "DELETE FROM documentos WHERE id = %s AND usuario_id = %s;"
+        valores = (id_documento, usuario_id)
         exito = False
-
+        cursor = None
         try:
             cursor = conexion.cursor()
             cursor.execute(query, valores)
@@ -117,7 +117,7 @@ class DatabaseManager:
                 print(f"Documento (ID: {id_documento}) eliminado físicamente de PostgreSQL.")
                 exito = True
             else:
-                print(f"Advertencia: No se encontró el documento con ID {id_documento} para eliminar.")
+                print(f"Advertencia: No se encontró el documento con ID {id_documento} o no tienes permiso para eliminarlo.")
                 conexion.rollback()  # Cancelamos por precaución
 
         except Error as e:
@@ -126,14 +126,14 @@ class DatabaseManager:
             raise
 
         finally:
-            if 'cursor' in locals() and cursor:
+            if cursor:
                 cursor.close()
             if conexion:
                 conexion.close()
 
         return exito
 
-    def obtener_todos(self) -> list[Documento]:
+    def obtener_todos(self, usuario_id: int) -> list[Documento]:
         conexion = self.obtener_conexion()
         if not conexion:
             print("No se pudo conectar a la base de datos para cargar las notas.")
@@ -141,12 +141,17 @@ class DatabaseManager:
 
         documentos_cargados = []
 
-        query = "SELECT id, titulo, contenido_raw, fecha_creacion FROM documentos ORDER BY id ASC;"
+        query = """
+                SELECT id, titulo, contenido_raw, fecha_creacion, usuario_id
+                FROM documentos
+                WHERE usuario_id = %s
+                ORDER BY id ASC;
+                """
 
+        cursor = None
         try:
             cursor = conexion.cursor()
-            cursor.execute(query)
-
+            cursor.execute(query, (usuario_id,))
             filas = cursor.fetchall()
 
             for fila in filas:
@@ -154,17 +159,18 @@ class DatabaseManager:
                     id_documento=fila[0],
                     titulo=fila[1],
                     contenido_raw=fila[2],
-                    fecha_creacion=fila[3]
+                    fecha_creacion=fila[3],
+                    usuario_id=fila[4]
                 )
                 documentos_cargados.append(nota_recuperada)
 
-            print(f"Se cargaron {len(documentos_cargados)} documentos desde la base de datos.")
+            print(f"Se cargaron {len(documentos_cargados)} documentos para el usuario {usuario_id}.")
 
         except Error as e:
             print(f"Error al obtener los documentos de Postgres: {e}")
 
         finally:
-            if 'cursor' in locals() and cursor:
+            if cursor:
                 cursor.close()
             if conexion:
                 conexion.close()

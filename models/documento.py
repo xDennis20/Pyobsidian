@@ -5,11 +5,13 @@ class Documento:
     def __init__(self, id_documento: int | None,
                  titulo: str,
                  contenido_raw: str,
-                 fecha_creacion: str | None):
+                 fecha_creacion: str | None,
+                 usuario_id: int):
         self.id_documento = id_documento
         self.titulo = titulo
         self.contenido_raw = contenido_raw
         self.fecha_creacion = fecha_creacion
+        self.usuario_id = usuario_id
 
     @property
     def titulo(self):

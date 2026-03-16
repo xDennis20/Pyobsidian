@@ -4,18 +4,29 @@
 
 {% block content %}
     <header class="hero">
-        <h1>Bienvenido a tu Cerebro Digital</h1>
+        <h1>Bienvenido a tu Cerebro Digital, {{ current_user.username }}</h1>
         <p>Tu repositorio de conocimiento, servido con Python.</p>
     </header>
 
     <section class="status-card">
         <h3>Estado de la Bóveda</h3>
-        <p>📂 Carpeta raíz: <strong>/home/usuario/obsidian_vault</strong></p>
-        <p>🟢 Sistema: <strong>Online</strong></p>
+        <p>📂 Bóveda de: <strong>{{ current_user.username }}</strong></p>
+        <p>🟢 Sistema: <strong>Online y Seguro</strong></p>
     </section>
-    <div style="margin-top: 2rem;">
-    <a href="{{ url_for('crear_nota') }}" style="background-color: #9b59b6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 1.1rem;">
-        ➕ Crear Nueva Nota
-    </a>
+
+    <div style="margin-top: 2rem; display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+
+        <a href="{{ url_for('crear_nota') }}" style="background-color: #9b59b6; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 1.1rem;">
+            ➕ Crear Nueva Nota
+        </a>
+
+        <a href="{{ url_for('ver_notas') }}" style="background-color: #3498db; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 1.1rem;">
+            📚 Ver Mis Notas
+        </a>
+
+        <a href="{{ url_for('logout') }}" style="background-color: #e74c3c; color: white; padding: 10px 20px; text-decoration: none; border-radius: 5px; font-weight: bold; font-size: 1.1rem;">
+            🚪 Cerrar Sesión
+        </a>
+
     </div>
 {% endblock %}
