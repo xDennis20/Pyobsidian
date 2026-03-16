@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="auth-container">
+    <h2>Registrar Nuevo Usuario</h2>
+
+    {% with messages = get_flashed_messages() %}
+        {% if messages %}
+            <ul class="alertas-flask">
+            {% for message in messages %}
+                <li style="color: red; font-weight: bold;">{{ message }}</li>
+            {% endfor %}
+            </ul>
+        {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="{{ url_for('register') }}">
+        <div style="margin-bottom: 10px;">
+            <label for="username">Nombre de Usuario:</label><br>
+            <input type="text" id="username" name="username" required>
+        </div>
+        
+        <div style="margin-bottom: 10px;">
+            <label for="password">Contraseña secreta:</label><br>
+            <input type="password" id="password" name="password" required>
+        </div>
+        
+        <button type="submit">Crear Cuenta</button>
+    </form>
+    
+    <p style="margin-top: 15px;">¿Ya tienes acceso a la bóveda? <a href="{{ url_for('login') }}">Inicia sesión aquí</a></p>
+</div>
+{% endblock %}
