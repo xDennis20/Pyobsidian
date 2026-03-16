@@ -7,6 +7,7 @@ from models.documento import Documento
 from models.usuario import Usuario
 
 app = Flask(__name__)
+app.secret_key = '13456'
 
 # Configuración de Flask-Login
 login_manager = LoginManager()
@@ -85,9 +86,6 @@ def register():
             flash('Error: El nombre de usuario ya está en uso o hubo un problema.')
             return redirect(url_for('register'))
 
-        finally:
-            if conexion:
-                DatabaseManager().cerrar_conexion(conexion)
     return render_template('register.html')
 
 @app.route('/login', methods=['GET', 'POST'])
