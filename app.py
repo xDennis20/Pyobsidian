@@ -1,9 +1,19 @@
-from flask import Flask, render_template, request, redirect, url_for
+from flask import Flask, request, render_template, redirect, url_for, flash
+from werkzeug.security import generate_password_hash, check_password_hash
+from database.db_manager import DatabaseManager
+from flask_login import LoginManager, login_user, logout_user, login_required
 from logic.gestor_notas import GestorNotas
 from models.documento import Documento
+from models.usuario import Usuario
 
 app = Flask(__name__)
 
+# Configuración de Flask-Login
+login_manager = LoginManager()
+login_manager.init_app(app)
+
+login_manager.login_view = 'login'
+login_manager.login_message = 'Por favor, inicia sesión para acceder a tu bóveda.'
 gestor = GestorNotas()
 
 gestor.obtener_datos_db()
@@ -12,6 +22,126 @@ gestor.obtener_datos_db()
 @app.route('/')
 def home():
     return render_template('index.html')
+
+
+@login_manager.user_loader
+def load_user(user_id):
+    conexion = None
+    try:
+        conexion = DatabaseManager().obtener_conexion()
+        cursor = conexion.cursor()
+        query = "SELECT id, username, es_admin FROM public.usuario WHERE id = %s"
+        # Casteamos user_id a entero porque en la clase lo convertimos a string
+        cursor.execute(query, (int(user_id),))
+        user_record = cursor.fetchone()
+
+        cursor.close()
+        if user_record:
+            return Usuario(id=user_record[0], username=user_record[1], es_admin=user_record[2])
+        return None
+    except Exception as e:
+        print(f"Error cargando usuario: {e}")
+        return None
+
+@app.route('/register', methods=['GET', 'POST'])
+def register():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        if not username or not password:
+            flash('Por favor, completa todos los campos.')
+            return redirect(url_for('register'))
+
+        # 2. Hasheamos la contraseña de forma segura
+        hashed_password = generate_password_hash(password, method='pbkdf2:sha256')
+
+        # 3. Guardamos en la base de datos PostgreSQL
+        conexion = None
+        try:
+            conexion = DatabaseManager().obtener_conexion()  # Ajusta esto a tu código real
+            cursor = conexion.cursor()
+
+            # La consulta SQL parametrizada para evitar inyecciones
+            query = """
+                    INSERT INTO public.usuario (username, password_hash)
+                    VALUES (%s, %s) \
+                    """
+            cursor.execute(query, (username, hashed_password))
+
+            # Guardamos los cambios
+            conexion.commit()
+            cursor.close()
+
+            flash('¡Registro exitoso! Ahora puedes iniciar sesión.')
+            return redirect(url_for('login'))
+
+        except Exception as e:
+            # Si hay un error (como que el usuario ya existe por el UNIQUE en la BD)
+            if conexion:
+                conexion.rollback()  # Deshacemos la transacción rota
+
+            print(f"Error en BD: {e}")
+            flash('Error: El nombre de usuario ya está en uso o hubo un problema.')
+            return redirect(url_for('register'))
+
+        finally:
+            if conexion:
+                DatabaseManager().cerrar_conexion(conexion)
+    return render_template('register.html')
+
+@app.route('/login', methods=['GET', 'POST'])
+def login():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        password = request.form.get('password')
+
+        if not username or not password:
+            flash('Por favor, ingresa tu usuario y contraseña.')
+            return redirect(url_for('login'))
+
+        conexion = None
+        try:
+            conexion = DatabaseManager().obtener_conexion()
+            cursor = conexion.cursor()
+
+            query = """
+                    SELECT id, username, password_hash, es_admin
+                    FROM public.usuario
+                    WHERE username = %s \
+                    """
+            cursor.execute(query, (username,))
+            user_record = cursor.fetchone()
+            cursor.close()
+
+            if user_record and check_password_hash(user_record[2], password):
+                usuario_obj = Usuario(id=user_record[0], username=user_record[1], es_admin=user_record[3])
+                login_user(usuario_obj)
+                flash('¡Bienvenido de nuevo a tu bóveda!')
+                return redirect(url_for('dashboard'))
+
+            else:
+                flash('Usuario o contraseña incorrectos.')
+                return redirect(url_for('login'))
+
+        except Exception as e:
+            print(f"Error en BD al iniciar sesión: {e}")
+            flash('Hubo un problema interno al intentar iniciar sesión.')
+            return redirect(url_for('login'))
+
+    # Si es una petición GET, mostramos el formulario HTML
+    return render_template('login.html')
+@app.route('/logout')
+@login_required #
+def logout():
+    logout_user()
+    flash('Has cerrado sesión correctamente. ¡Nos vemos!')
+    return redirect(url_for('login'))
+
+@app.route('/mis-notas-privadas')
+@login_required
+def notas_privadas():
+    return "Bienvenido a tus apuntes secretos de PyObsidian."
 
 @app.route('/about')
 def about():
