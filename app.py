@@ -1,5 +1,3 @@
-from http.cookiejar import cut_port_re
-
 from flask import Flask, request, render_template, redirect, url_for, flash
 from werkzeug.security import generate_password_hash, check_password_hash
 from database.db_manager import DatabaseManager
