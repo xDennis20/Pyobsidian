@@ -3,7 +3,34 @@
 {% block title %}Mis Notas - PyObsidian{% endblock %}
 
 {% block content %}
+    <style>
+        .btn-minimalista {
+            display: inline-block;
+            padding: 8px 16px;
+            margin-bottom: 20px;
+            border: 1px solid currentColor;
+            background-color: transparent;
+            color: inherit; /* Toma el color del texto de tu tema actual */
+            text-decoration: none;
+            font-family: inherit;
+            font-size: 14px;
+            border-radius: 4px;
+            transition: all 0.2s ease-in-out;
+            opacity: 0.8;
+        }
+
+        .btn-minimalista:hover {
+            opacity: 1;
+            background-color: rgba(128, 128, 128, 0.1); /* Un gris súper transparente */
+        }
+    </style>
+
     <h2>Archivos Recientes</h2>
+
+    <a href="{{ url_for('descargar_reporte') }}" class="btn-minimalista">
+        📄 Exportar Bóveda a PDF
+    </a>
+
     <div class="notes-grid">
         {% for nota in lista_notas %}
             <div class="note-card">

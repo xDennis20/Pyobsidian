@@ -1,10 +1,12 @@
-from flask import Flask, request, render_template, redirect, url_for, flash
+from flask import Flask, request, render_template, redirect, url_for, flash, send_file
 from werkzeug.security import generate_password_hash, check_password_hash
 from database.db_manager import DatabaseManager
 from flask_login import LoginManager, login_user, logout_user, login_required, current_user
 from logic.gestor_notas import GestorNotas
 from models.documento import Documento
 from models.usuario import Usuario
+from logic.reporte_generador import generar_pdf_documentos
+from datetime import datetime
 
 app = Flask(__name__)
 app.secret_key = '13456'
@@ -201,6 +203,34 @@ def eliminar_nota(id_nota: int):
     except Exception as e:
         return f"Error al eliminar de la base de datos: {e}", 500
 
+
+@app.route('/descargar_reporte')
+@login_required
+def descargar_reporte():
+    # 1. Reutilizamos tu GestorNotas para traer los datos limpios
+    gestor = GestorNotas()
+    gestor.obtener_datos_db(current_user.id)
+    mis_notas = list(gestor.documentos.values())
+
+    # 2. Validación por si el usuario es nuevo y no tiene notas
+    if not mis_notas:
+        flash('No tienes notas registradas para generar un reporte.')
+        return redirect(url_for('ver_notas'))
+
+    # 3. Llamamos al generador pasándole los objetos y el username
+    buffer_pdf = generar_pdf_documentos(mis_notas, current_user.username)
+
+    # 4. Armamos un nombre de archivo dinámico
+    fecha_archivo = datetime.now().strftime("%Y%m%d")
+    nombre_descarga = f"Reporte_Pyobsidian_{current_user.username}_{fecha_archivo}.pdf"
+
+    # 5. Enviamos el PDF directamente a la RAM del usuario
+    return send_file(
+        buffer_pdf,
+        as_attachment=True,
+        download_name=nombre_descarga,
+        mimetype='application/pdf'
+    )
 
 if __name__ == '__main__':
     app.run(debug=True, port=5000)

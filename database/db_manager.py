@@ -176,3 +176,27 @@ class DatabaseManager:
                 conexion.close()
 
         return documentos_cargados
+
+    def obtener_documentos_para_reporte(self, id_usuario):
+        """
+        Trae ID, Título y Fecha de Creación de los documentos de un usuario específico.
+        """
+        conn = None
+        data = []
+        try:
+            conn = self.obtener_conexion()
+            with conn.cursor() as cur:
+                sql = """
+                      SELECT id_documento, titulo, fecha_creacion
+                      FROM documentos
+                      WHERE id_usuario = %s
+                      ORDER BY fecha_creacion DESC; \
+                      """
+                cur.execute(sql, (id_usuario,))
+                data = cur.fetchall()
+        except psycopg2.Error as e:
+            print(f"Error en la base de datos al generar reporte: {e}")
+        finally:
+            if conn:
+                conn.close()
+        return data
