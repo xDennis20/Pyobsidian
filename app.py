@@ -207,7 +207,7 @@ def eliminar_nota(id_nota: int):
 @app.route('/descargar_reporte')
 @login_required
 def descargar_reporte():
-    # 1. Reutilizamos tu GestorNotas para traer los datos limpios
+    # 1. Reutilizamos el GestorNotas para traer los datos limpios
     gestor = GestorNotas()
     gestor.obtener_datos_db(current_user.id)
     mis_notas = list(gestor.documentos.values())
